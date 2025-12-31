@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grover's Gym | Elite Fitness</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { 
+            background-color: #050505; 
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, h5, h6, .display-font {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 20, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            black: '#050505',
+                            dark: '#111111',
+                            gray: '#1f1f1f',
+                            accent: '#ffffff'
+                        }
+                    },
+                    letterSpacing: {
+                        widest: '.2em',
+                        ultra: '.3em',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { motion, AnimatePresence } = window.Motion;
+        const { Menu, X, ArrowRight, Instagram, MapPin, ShoppingBag, Dumbbell, Activity, ShieldCheck, Play, Star } = lucide;
+
+        // --- COMPONENTS ---
+
+        // 1. Navigation
+        const Navbar = ({ setPage, currentPage }) => {
+            const [isOpen, setIsOpen] = useState(false);
+
+            const navLinks = [
+                { id: 'home', label: 'Home' },
+                { id: 'about', label: 'Philosophy' },
+                { id: 'programs', label: 'Programs' },
+                { id: 'membership', label: 'Membership' },
+                { id: 'store', label: 'Store' }, // Highlighted
+                { id: 'gallery', label: 'Gallery' },
+                { id: 'contact', label: 'Contact' },
+            ];
+
+            return (
+                <nav className="fixed top-0 w-full z-50 glass-panel border-b-0">
+                    <div className="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+                        <div 
+                            className="text-2xl font-bold tracking-widest cursor-pointer display-font flex items-center gap-2"
+                            onClick={() => setPage('home')}
+                        >
+                            GROVER'S<span className="text-gray-500">GYM</span>
+                        </div>
+
+                        {/* Desktop Menu */}
+                        <div className="hidden md:flex gap-8 items-center">
+                            {navLinks.map((link) => (
+                                <button
+                                    key={link.id}
+                                    onClick={() => setPage(link.id)}
+                                    className={`text-xs font-medium tracking-widest hover:text-white transition-colors uppercase ${currentPage === link.id ? 'text-white border-b border-white pb-1' : 'text-gray-400'}`}
+                                >
+                                    {link.label}
+                                </button>
+                            ))}
+                            <button onClick={() => setPage('membership')} className="bg-white text-black px-6 py-2 text-xs font-bold tracking-widest uppercase hover:bg-gray-200 transition-all">
+                                Join Now
+                            </button>
+                        </div>
+
+                        {/* Mobile Toggle */}
+                        <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
+                            {isOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
+
+                    {/* Mobile Menu */}
+                    <AnimatePresence>
+                        {isOpen && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="absolute top-full left-0 w-full bg-brand-black border-t border-gray-800 p-8 flex flex-col gap-6 md:hidden h-screen"
+                            >
+                                {navLinks.map((link) => (
+                                    <button
+                                        key={link.id}
+                                        onClick={() => { setPage(link.id); setIsOpen(false); }}
+                                        className="text-2xl display-font text-left text-gray-300 hover:text-white"
+                                    >
+                                        {link.label}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </nav>
+            );
+        };
+
+        // 2. Footer
+        const Footer = ({ setPage }) => (
+            <footer className="bg-black py-20 border-t border-gray-900">
+                <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+                    <div>
+                        <h4 className="text-2xl mb-6 tracking-widest">GROVER'S GYM</h4>
+                        <p className="text-gray-500 text-sm leading-relaxed mb-6">
+                            Defining the standard of elite fitness in Bihar. <br/>
+                            Luxury. Performance. Community.
+                        </p>
+                        <div className="flex gap-4">
+                            <a href="https://www.instagram.com/_grovers__/" target="_blank" className="text-white hover:text-gray-400"><Instagram size={20} /></a>
+                            <a href="https://wa.me/message/UFVYP5GM4XAHA1" target="_blank" className="text-white hover:text-gray-400"><span className="font-bold">WA</span></a>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h5 className="text-sm font-bold tracking-widest mb-6 text-gray-400">EXPLORE</h5>
+                        <ul className="space-y-4 text-sm text-gray-300">
+                            <li><button onClick={() => setPage('about')} className="hover:text-white">Philosophy</button></li>
+                            <li><button onClick={() => setPage('programs')} className="hover:text-white">Training</button></li>
+                            <li><button onClick={() => setPage('store')} className="hover:text-white">The Store</button></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h5 className="text-sm font-bold tracking-widest mb-6 text-gray-400">LEGAL</h5>
+                        <ul className="space-y-4 text-sm text-gray-300">
+                            <li className="hover:text-white cursor-pointer">Privacy Policy</li>
+                            <li className="hover:text-white cursor-pointer">Terms of Service</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h5 className="text-sm font-bold tracking-widest mb-6 text-gray-400">VISIT US</h5>
+                        <p className="text-gray-400 text-sm leading-relaxed">
+                            Shiv Mandir Chowk,<br/>
+                            Yagyashala Mandir ke pichle wali gali,<br/>
+                            Katihar, Bihar 854105
+                        </p>
+                    </div>
+                </div>
+                <div className="max-w-7xl mx-auto px-6 mt-20 pt-8 border-t border-gray-900 text-xs text-gray-600 flex justify-between">
+                    <span>© 2025 GROVER'S GYM. ALL RIGHTS RESERVED.</span>
+                    <span>DESIGNED FOR ELITE PERFORMANCE.</span>
+                </div>
+            </footer>
+        );
+
+        // --- PAGES ---
+
+        const HomePage = ({ setPage }) => (
+            <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="pt-20"
+            >
+                {/* Hero Section */}
+                <section className="relative h-screen flex items-center justify-center overflow-hidden">
+                    <div className="absolute inset-0 z-0">
+                        <img 
+                            src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop" 
+                            className="w-full h-full object-cover opacity-40 grayscale"
+                            alt="Gym Background"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50"></div>
+                    </div>
+                    
+                    <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+                        <motion.h2 
+                            initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8 }}
+                            className="text-sm md:text-lg font-medium tracking-[0.5em] text-gray-300 mb-6 uppercase"
+                        >
+                            Establish Your Legacy
+                        </motion.h2>
+                        <motion.h1 
+                            initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2, duration: 0.8 }}
+                            className="text-6xl md:text-9xl font-bold tracking-tight mb-8 text-glow uppercase leading-none"
+                        >
+                            Elite Strength.<br/>Elite Lifestyle.
+                        </motion.h1>
+                        <motion.div 
+                            initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4, duration: 0.8 }}
+                            className="flex flex-col md:flex-row gap-6 justify-center items-center mt-12"
+                        >
+                            <button onClick={() => setPage('membership')} className="bg-white text-black px-10 py-4 text-sm font-bold tracking-widest uppercase hover:bg-gray-200 transition-transform hover:scale-105">
+                                Start Your Journey
+                            </button>
+                            <button onClick={() => setPage('store')} className="border border-white/30 backdrop-blur-sm px-10 py-4 text-sm font-bold tracking-widest uppercase hover:bg-white hover:text-black transition-all">
+                                Visit Shop
+                            </button>
+                        </motion.div>
+                    </div>
+                </section>
+
+                {/* Features Ticker */}
+                <div className="bg-brand-dark border-y border-gray-800 py-6 overflow-hidden">
+                    <div className="flex justify-around text-gray-500 uppercase tracking-widest text-xs font-bold">
+                        <span>High Performance</span>
+                        <span>Luxury Amenities</span>
+                        <span>Expert Coaching</span>
+                        <span>Premium Equipment</span>
+                    </div>
+                </div>
+
+                {/* Aesthetic Section */}
+                <section className="py-32 px-6 max-w-7xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center">
+                        <div>
+                            <h3 className="text-4xl md:text-6xl mb-8 leading-tight">Forged in Iron.<br/>Refined by Science.</h3>
+                            <p className="text-gray-400 leading-relaxed mb-8 font-light">
+                                Grover's Gym isn't just a place to sweat. It is a sanctuary for those dedicated to the pursuit of physical perfection. We combine raw industrial aesthetics with cutting-edge biomechanics to create an environment that commands progress.
+                            </p>
+                            <button onClick={() => setPage('about')} className="flex items-center gap-4 text-sm tracking-widest hover:text-gray-300 transition-colors uppercase font-bold border-b border-white pb-2 w-max">
+                                Read Our Story <ArrowRight size={16} />
+                            </button>
+                        </div>
+                        <div className="relative h-[600px] group overflow-hidden">
+                            <img 
+                                src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop" 
+                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out scale-100 group-hover:scale-110"
+                            />
+                        </div>
+                    </div>
+                </section>
+            </motion.div>
+        );
+
+        const AboutPage = () => (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+                <h1 className="text-6xl md:text-8xl mb-12 text-center">The Philosophy</h1>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-gray-300 leading-loose border-t border-gray-800 pt-12">
+                    <div>
+                        <h4 className="text-white text-xl mb-4 tracking-widest">01. ORIGIN</h4>
+                        <p>Founded in Katihar, Grover's Gym was born from a dissatisfaction with the mediocre. We envisioned a space where ambition meets facility.</p>
+                    </div>
+                    <div>
+                        <h4 className="text-white text-xl mb-4 tracking-widest">02. METHOD</h4>
+                        <p>We believe in data-driven training. Our equipment is selected not for how it looks, but for the precise muscle stimulation it provides.</p>
+                    </div>
+                    <div>
+                        <h4 className="text-white text-xl mb-4 tracking-widest">03. CULTURE</h4>
+                        <p>No ego. Only dedication. Our community is curated. We support the disciplined and the hungry.</p>
+                    </div>
+                </div>
+                <div className="mt-20 h-[500px] w-full bg-gray-900 overflow-hidden relative">
+                     <img src="https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?q=80&w=2069&auto=format&fit=crop" className="w-full h-full object-cover opacity-60" />
+                     <div className="absolute bottom-10 left-10">
+                        <h2 className="text-4xl">Grover's Gym</h2>
+                        <p className="tracking-widest">EST. 2025</p>
+                     </div>
+                </div>
+            </motion.div>
+        );
+
+        const ProgramsPage = () => {
+            const programs = [
+                { title: "Hypertrophy", desc: "Advanced muscle growth tailored to your genetics.", img: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?q=80&w=2070&auto=format&fit=crop" },
+                { title: "Fat Loss", desc: "High-intensity metabolic conditioning.", img: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=2070&auto=format&fit=crop" },
+                { title: "Personal Training", desc: "1-on-1 coaching with Bihar's top elite trainers.", img: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=2070&auto=format&fit=crop" }
+            ];
+
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+                    <h1 className="text-6xl mb-16">Programs</h1>
+                    <div className="grid grid-cols-1 gap-1">
+                        {programs.map((prog, idx) => (
+                            <div key={idx} className="group relative h-[400px] border-t border-gray-800 overflow-hidden cursor-pointer">
+                                <img src={prog.img} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-60 group-hover:scale-105 transition-all duration-700" />
+                                <div className="absolute inset-0 flex flex-col justify-center px-12 z-10">
+                                    <h2 className="text-5xl md:text-7xl stroke-text text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500 group-hover:translate-x-4 transition-transform duration-500">
+                                        {prog.title}
+                                    </h2>
+                                    <p className="mt-4 text-xl font-light text-gray-300 max-w-xl group-hover:translate-x-4 transition-transform duration-500 delay-75">{prog.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+            )
+        };
+
+        const StorePage = () => (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-20">
+                <div className="max-w-7xl mx-auto px-6 mb-12 flex justify-between items-end">
+                    <div>
+                        <p className="text-sm tracking-widest text-gray-500 mb-2">GROVER'S SELECT</p>
+                        <h1 className="text-5xl md:text-7xl">The Store</h1>
+                    </div>
+                </div>
+
+                {/* Hero Product Card */}
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-gray-800 p-8 md:p-16 flex flex-col md:flex-row items-center gap-12 rounded-lg relative overflow-hidden group">
+                        
+                        {/* Decorative Background Glow */}
+                        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                        <div className="w-full md:w-1/2 relative z-10">
+                            <div className="flex gap-2 mb-6">
+                                <span className="bg-white text-black text-[10px] font-bold px-2 py-1 uppercase tracking-widest">Featured Collab</span>
+                                <span className="border border-gray-700 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-widest">Best Seller</span>
+                            </div>
+                            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Pro-Grade Electric Grooming Trimmer</h2>
+                            <p className="text-gray-400 text-lg mb-8 leading-relaxed">
+                                Engineered for the modern man. Cordless precision, long-lasting battery, and skin-safe technology. Maintain the elite look outside the gym.
+                            </p>
+                            
+                            <ul className="space-y-3 mb-10 text-gray-300 text-sm">
+                                <li className="flex items-center gap-3"><ShieldCheck size={18} className="text-white"/> Stainless Steel Precision Blades</li>
+                                <li className="flex items-center gap-3"><Activity size={18} className="text-white"/> 120-Minute Cordless Runtime</li>
+                                <li className="flex items-center gap-3"><Star size={18} className="text-white"/> Ergonomic Non-Slip Grip</li>
+                            </ul>
+
+                            <div className="flex items-center gap-6">
+                                <a 
+                                    href="https://theapnastore.online/products/electric-grooming-trimmer-for-men-cordless-beard-moustache-trimmer?variant=47600381395044" 
+                                    target="_blank"
+                                    className="bg-white text-black px-8 py-4 text-sm font-bold tracking-widest uppercase hover:bg-gray-200 transition-all flex items-center gap-3"
+                                >
+                                    Buy Now <ArrowRight size={16} />
+                                </a>
+                                <span className="text-2xl font-light">₹899 <span className="text-sm text-gray-500 line-through ml-2">₹1,999</span></span>
+                            </div>
+                        </div>
+
+                        <div className="w-full md:w-1/2 flex justify-center relative z-10">
+                            {/* Product Image Placeholder - Styled to look premium */}
+                            <div className="w-[300px] h-[400px] md:w-[400px] md:h-[500px] bg-gray-900 rounded-2xl border border-gray-800 flex items-center justify-center relative shadow-2xl overflow-hidden">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1621607512214-68297480165e?q=80&w=2000&auto=format&fit=crop" 
+                                    alt="Trimmer"
+                                    className="object-cover w-full h-full mix-blend-normal hover:scale-105 transition-transform duration-500"
+                                />
+                                <div className="absolute bottom-4 left-4 bg-black/80 backdrop-blur-md px-4 py-2 rounded text-xs border border-gray-700">
+                                    THE APNA STORE OFFICIAL
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+                     <div className="p-8 border border-gray-900 bg-brand-dark/50 hover:border-gray-700 transition-colors">
+                        <h3 className="text-xl mb-2">Protein & Supplements</h3>
+                        <p className="text-gray-500 text-sm mb-4">Coming Soon</p>
+                     </div>
+                     <div className="p-8 border border-gray-900 bg-brand-dark/50 hover:border-gray-700 transition-colors">
+                        <h3 className="text-xl mb-2">Grover's Apparel</h3>
+                        <p className="text-gray-500 text-sm mb-4">Coming Soon</p>
+                     </div>
+                     <div className="p-8 border border-gray-900 bg-brand-dark/50 hover:border-gray-700 transition-colors">
+                        <h3 className="text-xl mb-2">Training Gear</h3>
+                        <p className="text-gray-500 text-sm mb-4">Coming Soon</p>
+                     </div>
+                </div>
+            </motion.div>
+        );
+
+        const MembershipPage = () => {
+             const plans = [
+                 { name: "Standard", price: "₹1,500", duration: "/month", features: ["Access to Gym Floor", "Locker Room Access", "General Guidance"] },
+                 { name: "Elite", price: "₹4,000", duration: "/quarter", features: ["All Standard Features", "Diet Consultation", "1 Personal Training Session", "Steam Bath Access"] },
+                 { name: "Legacy", price: "₹12,000", duration: "/year", features: ["All Elite Features", "Unlimited Personal Training", "Grover's Merch Kit", "Priority Support", "Guest Pass"] }
+             ];
+
+             return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+                    <h1 className="text-6xl text-center mb-4">Membership</h1>
+                    <p className="text-center text-gray-400 mb-16 max-w-2xl mx-auto">Choose your commitment level. No hidden fees. Just results.</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {plans.map((plan, idx) => (
+                            <div key={idx} className={`p-10 border ${idx === 1 ? 'border-white bg-white/5' : 'border-gray-800 bg-brand-dark'} flex flex-col`}>
+                                <h3 className="text-2xl mb-2 tracking-widest uppercase">{plan.name}</h3>
+                                <div className="text-4xl font-bold mb-8">{plan.price}<span className="text-sm font-normal text-gray-500">{plan.duration}</span></div>
+                                <ul className="space-y-4 mb-10 flex-grow">
+                                    {plan.features.map((f, i) => (
+                                        <li key={i} className="flex gap-3 text-sm text-gray-300">
+                                            <div className="h-1.5 w-1.5 bg-white rounded-full mt-2"></div> {f}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <button className={`w-full py-4 text-xs font-bold tracking-widest uppercase border transition-all ${idx === 1 ? 'bg-white text-black hover:bg-gray-200 border-white' : 'border-gray-700 hover:border-white'}`}>
+                                    Select Plan
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+             );
+        };
+
+        const GalleryPage = () => {
+            const images = [
+                "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=1975&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?q=80&w=2069&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1605296867304-6f02b87a8c3d?q=80&w=2070&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1542766788-a2f588f447ee?q=80&w=2076&auto=format&fit=crop",
+                "https://images.unsplash.com/photo-1517963879466-e9b5ce382d69?q=80&w=2071&auto=format&fit=crop"
+            ];
+            
+            return (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
+                    <h1 className="text-6xl mb-12">Visuals</h1>
+                    <div className="columns-1 md:columns-2 gap-8 space-y-8">
+                        {images.map((src, idx) => (
+                            <motion.div 
+                                key={idx} 
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                className="break-inside-avoid relative group overflow-hidden"
+                            >
+                                <img src={src} className="w-full grayscale hover:grayscale-0 transition-all duration-700" alt="Gallery" />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const ContactPage = () => (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="pt-32 pb-20 px-6 max-w-7xl mx-auto h-screen flex flex-col">
+                <h1 className="text-6xl mb-12">Contact</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 flex-grow">
+                    <div className="space-y-12">
+                         <div>
+                             <h4 className="text-gray-500 tracking-widest text-sm mb-4">LOCATION</h4>
+                             <p className="text-2xl leading-relaxed">
+                                Shiv Mandir Chowk,<br/>
+                                Yagyashala Mandir ke pichle wali gali,<br/>
+                                Katihar, Bihar 854105
+                             </p>
+                         </div>
+                         <div>
+                             <h4 className="text-gray-500 tracking-widest text-sm mb-4">DIGITAL</h4>
+                             <a href="https://www.instagram.com/_grovers__/" target="_blank" className="block text-xl hover:text-gray-400 mb-2">@_grovers__</a>
+                             <a href="https://wa.me/message/UFVYP5GM4XAHA1" target="_blank" className="block text-xl hover:text-gray-400">WhatsApp Support</a>
+                         </div>
+                         <div className="pt-8">
+                            <a href="https://wa.me/message/UFVYP5GM4XAHA1" className="inline-block border border-white px-10 py-4 text-sm font-bold tracking-widest uppercase hover:bg-white hover:text-black transition-all">
+                                Chat Now
+                            </a>
+                         </div>
+                    </div>
+                    <div className="bg-gray-900 border border-gray-800 relative h-full min-h-[400px]">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3593.684877714856!2d87.575!3d25.545!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f0f9c000000001%3A0x0!2zMjXCsDMyJzQyLjAiTiA4N8KwMzQnMzAuMCJF!5e0!3m2!1sen!2sin!4v1620000000000!5m2!1sen!2sin" 
+                            width="100%" 
+                            height="100%" 
+                            style={{border:0, filter: 'grayscale(100%) invert(92%) contrast(83%)'}} 
+                            allowFullScreen="" 
+                            loading="lazy"
+                        ></iframe>
+                    </div>
+                </div>
+            </motion.div>
+        );
+
+        // --- APP ---
+
+        const App = () => {
+            const [page, setPage] = useState('home');
+
+            // Scroll to top on page change
+            useEffect(() => {
+                window.scrollTo(0, 0);
+            }, [page]);
+
+            return (
+                <div className="bg-brand-black text-white min-h-screen selection:bg-white selection:text-black">
+                    <Navbar setPage={setPage} currentPage={page} />
+                    
+                    <AnimatePresence mode='wait'>
+                        {page === 'home' && <HomePage key="home" setPage={setPage} />}
+                        {page === 'about' && <AboutPage key="about" />}
+                        {page === 'programs' && <ProgramsPage key="programs" />}
+                        {page === 'store' && <StorePage key="store" />}
+                        {page === 'membership' && <MembershipPage key="membership" />}
+                        {page === 'gallery' && <GalleryPage key="gallery" />}
+                        {page === 'contact' && <ContactPage key="contact" />}
+                    </AnimatePresence>
+
+                    <Footer setPage={setPage} />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
